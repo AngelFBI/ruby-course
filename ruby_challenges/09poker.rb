@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Hand
-  attr_reader :values, :suits
+  attr_reader :values, :suits, :same_value
 
   def initialize(card1, card2, card3, card4, card5)
     args = [card1, card2, card3, card4, card5]
@@ -12,6 +12,7 @@ class Hand
     end
     @suits.uniq!
     change_values
+    @same_value = unique_value
   end
 
   def highest_ranked
@@ -39,45 +40,45 @@ class Hand
     end
   end
 
-  def same_value
-    same_value = Hash.new(0)
-    @values.each do |value|
-      same_value[value.to_s.to_sym] += 1
-    end
-    same_value
-  end
-
   private
 
   def change_values
     changed_values = []
     @values.each do |value|
       changed_values << case value.upcase
-                       when 'J'
-                         11
-                       when 'Q'
-                         12
-                       when 'K'
-                         13
-                       when 'A'
-                         14
-                       else
-                         value.to_i
-                       end
+                        when 'J'
+                          11
+                        when 'Q'
+                          12
+                        when 'K'
+                          13
+                        when 'A'
+                          14
+                        else
+                          value.to_i
+                        end
     end
     @values = changed_values.sort
   end
 
+  def unique_value
+    unique_value = Hash.new(0)
+    @values.each do |value|
+      unique_value[value.to_s.to_sym] += 1
+    end
+    unique_value
+  end
+
   def pair?
-    same_value.value?(2)
+    @same_value.value?(2)
   end
 
   def two_pairs?
-    same_value.length == 3
+    @same_value.length == 3
   end
 
   def three_of_a_kind?
-    same_value.value?(3)
+    @same_value.value?(3)
   end
 
   def straight?
@@ -93,7 +94,7 @@ class Hand
   end
 
   def four_of_a_kind?
-    same_value.value?(4)
+    @same_value.value?(4)
   end
 
   def straight_flush?
