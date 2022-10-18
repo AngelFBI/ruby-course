@@ -7,13 +7,15 @@ class Hand
     args = [card1, card2, card3, card4, card5]
     @hand = {}
     (1..args.length).each do |i|
-      @hand["card#{i}".to_sym] = Hash[%i[value suit].zip(args[i - 1].split(''))]
+      @hand["card#{i}".to_sym] = Hash[%i[value suit].zip(args[i - 1].split(/\s*([a-z])/))]
     end
   end
 
   def highest_ranked
     initial_text = 'Highest-Ranked combination: '
-    if straight_flush?
+    if royal_flush?
+      "#{initial_text}Royal Flush"
+    elsif straight_flush?
       "#{initial_text}Straight Flush"
     elsif four_of_a_kind?
       "#{initial_text}Four of a Kind"
@@ -45,7 +47,18 @@ class Hand
   def values
     values = []
     hand.each do |_key, val|
-      values << val[:value]
+      values << case val[:value].upcase
+                when 'J'
+                  11
+                when 'Q'
+                  12
+                when 'K'
+                  13
+                when 'A'
+                  14
+                else
+                  val[:value].to_i
+                end
     end
     values.sort
   end
@@ -53,14 +66,12 @@ class Hand
   def same_value
     same_value = Hash.new(0)
     values.each do |value|
-      same_value[value.to_sym] += 1
+      same_value[value.to_s.to_sym] += 1
     end
     same_value
   end
 
-  def impossible
-    (values & %w[Q K J A]).any?
-  end
+  private
 
   def pair?
     same_value.value?(2)
@@ -75,10 +86,7 @@ class Hand
   end
 
   def straight?
-    return false if impossible
-
-    values_int = values.map(&:to_i)
-    values_int == (values_int.first...(values_int.first + values_int.length)).to_a
+    values == (values.first...(values.first + values.length)).to_a
   end
 
   def flush?
@@ -96,9 +104,14 @@ class Hand
   def straight_flush?
     flush? && straight?
   end
+
+  def royal_flush?
+    straight_flush? && values.first == 10
+  end
 end
 
-# hand1 = Hand.new('Ah','Kh','Qh','Jh','10h')
+hand1 = Hand.new('Ah', 'Kh', 'Qh', 'Jh', '10h')
+puts hand1.highest_ranked
 hand2 = Hand.new('9h', 'Kh', 'Qh', 'Jh', '8h')
 puts hand2.highest_ranked
 hand3 = Hand.new('7h', '5h', '8h', '6h', '9h')
