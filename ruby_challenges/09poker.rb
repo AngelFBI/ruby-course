@@ -39,10 +39,20 @@ class Hand
     end
   end
 
-  def change_values
-    change_values = []
+  def same_value
+    same_value = Hash.new(0)
     @values.each do |value|
-      change_values << case value.upcase
+      same_value[value.to_s.to_sym] += 1
+    end
+    same_value
+  end
+
+  private
+
+  def change_values
+    changed_values = []
+    @values.each do |value|
+      changed_values << case value.upcase
                        when 'J'
                          11
                        when 'Q'
@@ -55,18 +65,8 @@ class Hand
                          value.to_i
                        end
     end
-    @values = change_values.sort
+    @values = changed_values.sort
   end
-
-  def same_value
-    same_value = Hash.new(0)
-    @values.each do |value|
-      same_value[value.to_s.to_sym] += 1
-    end
-    same_value
-  end
-
-  private
 
   def pair?
     same_value.value?(2)
