@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
 class Hand
-  attr_reader :hand
+  attr_reader :values, :suits
 
   def initialize(card1, card2, card3, card4, card5)
     args = [card1, card2, card3, card4, card5]
-    @hand = {}
-    (1..args.length).each do |i|
-      @hand["card#{i}".to_sym] = Hash[%i[value suit].zip(args[i - 1].split(/\s*([a-z])/))]
+    @values = []
+    @suits = []
+    (0..args.length - 1).each do |i|
+      @values[i], @suits[i] = args[i].split(/\s*([a-z])/)
     end
+    @suits.uniq!
+    change_values
   end
 
   def highest_ranked
@@ -36,36 +39,28 @@ class Hand
     end
   end
 
-  def suits
-    suits = []
-    hand.each do |_key, val|
-      suits << val[:suit]
+  def change_values
+    change_values = []
+    @values.each do |value|
+      change_values << case value.upcase
+                       when 'J'
+                         11
+                       when 'Q'
+                         12
+                       when 'K'
+                         13
+                       when 'A'
+                         14
+                       else
+                         value.to_i
+                       end
     end
-    suits.uniq
-  end
-
-  def values
-    values = []
-    hand.each do |_key, val|
-      values << case val[:value].upcase
-                when 'J'
-                  11
-                when 'Q'
-                  12
-                when 'K'
-                  13
-                when 'A'
-                  14
-                else
-                  val[:value].to_i
-                end
-    end
-    values.sort
+    @values = change_values.sort
   end
 
   def same_value
     same_value = Hash.new(0)
-    values.each do |value|
+    @values.each do |value|
       same_value[value.to_s.to_sym] += 1
     end
     same_value
